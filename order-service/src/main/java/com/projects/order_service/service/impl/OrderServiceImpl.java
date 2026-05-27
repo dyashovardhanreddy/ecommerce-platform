@@ -3,6 +3,7 @@ package com.projects.order_service.service.impl;
 import com.projects.order_service.dto.CreateOrderRequest;
 import com.projects.order_service.dto.OrderResponse;
 import com.projects.order_service.dto.UpdateOrderStatusRequest;
+import com.projects.order_service.event.OrderCreatedEvent;
 import com.projects.order_service.exception.OrderNotFoundException;
 import com.projects.order_service.model.Order;
 import com.projects.order_service.model.OrderStatus;
@@ -10,6 +11,7 @@ import com.projects.order_service.repository.OrderRepository;
 import com.projects.order_service.service.OrderService;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -18,6 +20,7 @@ import org.springframework.transaction.annotation.Transactional;
 public class OrderServiceImpl implements OrderService {
 
     private final OrderRepository orderRepository;
+    private final ApplicationEventPublisher eventPublisher;
 
     @Override
     @Transactional
@@ -29,7 +32,10 @@ public class OrderServiceImpl implements OrderService {
                 .status(OrderStatus.CREATED)
                 .build();
 
-        return toResponse(orderRepository.save(order));
+        Order savedOrder = orderRepository.save(order);
+        OrderResponse response = toResponse(savedOrder);
+        eventPublisher.publishEvent(OrderCreatedEvent.from(response));
+        return response;
     }
 
     @Override
