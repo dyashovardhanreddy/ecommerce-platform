@@ -4,14 +4,15 @@ import com.projects.order_service.dto.CreateOrderRequest;
 import com.projects.order_service.dto.OrderResponse;
 import com.projects.order_service.dto.UpdateOrderStatusRequest;
 import com.projects.order_service.event.OrderCreatedEvent;
+import com.projects.order_service.event.OrderStatusChangedEvent;
 import com.projects.order_service.exception.OrderNotFoundException;
+import com.projects.order_service.messaging.KafkaOrderEventPublisher;
 import com.projects.order_service.model.Order;
 import com.projects.order_service.model.OrderStatus;
 import com.projects.order_service.repository.OrderRepository;
 import com.projects.order_service.service.OrderService;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
-import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -20,7 +21,7 @@ import org.springframework.transaction.annotation.Transactional;
 public class OrderServiceImpl implements OrderService {
 
     private final OrderRepository orderRepository;
-    private final ApplicationEventPublisher eventPublisher;
+    private final KafkaOrderEventPublisher kafkaOrderEventPublisher;
 
     @Override
     @Transactional
@@ -34,7 +35,7 @@ public class OrderServiceImpl implements OrderService {
 
         Order savedOrder = orderRepository.save(order);
         OrderResponse response = toResponse(savedOrder);
-        eventPublisher.publishEvent(OrderCreatedEvent.from(response));
+        kafkaOrderEventPublisher.publishOrderCreatedEventAfterCommit(OrderCreatedEvent.from(response));
         return response;
     }
 
@@ -57,8 +58,15 @@ public class OrderServiceImpl implements OrderService {
     @Transactional
     public OrderResponse updateOrderStatus(Long id, UpdateOrderStatusRequest request) {
         Order order = findOrderById(id);
+        OrderStatus previousStatus = order.getStatus();
         order.setStatus(request.status());
-        return toResponse(orderRepository.save(order));
+
+        Order savedOrder = orderRepository.save(order);
+        OrderResponse response = toResponse(savedOrder);
+        kafkaOrderEventPublisher.publishOrderStatusChangedEventAfterCommit(
+                OrderStatusChangedEvent.from(response, previousStatus)
+        );
+        return response;
     }
 
     private Order findOrderById(Long id) {
