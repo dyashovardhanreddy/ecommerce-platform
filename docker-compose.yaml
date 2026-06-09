@@ -11,6 +11,7 @@ services:
       - "3307:3306"
     volumes:
       - mysql-data:/var/lib/mysql
+      - ./mysql/init:/docker-entrypoint-initdb.d:ro
     healthcheck:
       test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-uroot", "-proot"]
       interval: 10s
@@ -62,6 +63,22 @@ services:
       SPRING_DATASOURCE_PASSWORD: Password@123
     ports:
       - "8080:8080"
+
+  product-service:
+    build:
+      context: ./product-service
+    container_name: product-service
+    depends_on:
+      mysql:
+        condition: service_healthy
+    environment:
+      SERVER_PORT: 8082
+      PRODUCT_SCHEMA: product_service
+      SPRING_DATASOURCE_URL: jdbc:mysql://mysql:3306/product_service?createDatabaseIfNotExist=true&allowPublicKeyRetrieval=true&useSSL=false
+      SPRING_DATASOURCE_USERNAME: dev
+      SPRING_DATASOURCE_PASSWORD: Password@123
+    ports:
+      - "8082:8082"
 
   notification-service:
     build:
