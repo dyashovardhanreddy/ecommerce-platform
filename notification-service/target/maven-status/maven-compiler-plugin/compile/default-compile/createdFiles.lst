@@ -1,0 +1,5 @@
+com\projects\notification_service\config\JacksonConfig.class
+com\projects\notification_service\event\OrderCreatedEvent.class
+com\projects\notification_service\event\OrderStatusChangedEvent.class
+com\projects\notification_service\messaging\OrderEventConsumer.class
+com\projects\notification_service\NotificationServiceApplication.class

@@ -3,21 +3,34 @@ services:
     image: mysql:8.4
     container_name: mysql-local
     environment:
-      MYSQL_DATABASE: order_service
-      MYSQL_USER: dev
-      MYSQL_PASSWORD: Password@123
       MYSQL_ROOT_PASSWORD: root
+      MYSQL_ROOT_HOST: "%"
     ports:
       - "3307:3306"
     volumes:
       - mysql-data:/var/lib/mysql
-      - ./mysql/init:/docker-entrypoint-initdb.d:ro
     healthcheck:
-      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-uroot", "-proot"]
+      test: ["CMD", "mysqladmin", "ping", "-h", "mysql", "-uroot", "-proot", "--silent"]
       interval: 10s
       timeout: 5s
       retries: 10
       start_period: 30s
+
+  mysql-schema-init:
+    image: mysql:8.4
+    container_name: mysql-schema-init
+    depends_on:
+      mysql:
+        condition: service_healthy
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+    volumes:
+      - ./mysql/init:/schema-init:ro
+    command:
+      - sh
+      - -c
+      - mysql --protocol=tcp --host=mysql --port=3306 --user=root --password="$${MYSQL_ROOT_PASSWORD}" < /schema-init/01-create-service-schemas.sql
+    restart: "no"
 
   kafka:
     image: apache/kafka:4.0.0
@@ -49,8 +62,8 @@ services:
       context: ./order-service
     container_name: order-service
     depends_on:
-      mysql:
-        condition: service_healthy
+      mysql-schema-init:
+        condition: service_completed_successfully
       kafka:
         condition: service_healthy
     environment:
@@ -58,7 +71,7 @@ services:
       ORDER_SCHEMA: order_service
       ORDER_KAFKA_TOPIC: orders
       KAFKA_BOOTSTRAP_SERVERS: kafka:29092
-      SPRING_DATASOURCE_URL: jdbc:mysql://mysql:3306/order_service?createDatabaseIfNotExist=true&allowPublicKeyRetrieval=true&useSSL=false
+      SPRING_DATASOURCE_URL: jdbc:mysql://mysql:3306/order_service?allowPublicKeyRetrieval=true&useSSL=false
       SPRING_DATASOURCE_USERNAME: dev
       SPRING_DATASOURCE_PASSWORD: Password@123
     ports:
@@ -69,16 +82,34 @@ services:
       context: ./product-service
     container_name: product-service
     depends_on:
-      mysql:
-        condition: service_healthy
+      mysql-schema-init:
+        condition: service_completed_successfully
     environment:
       SERVER_PORT: 8082
       PRODUCT_SCHEMA: product_service
-      SPRING_DATASOURCE_URL: jdbc:mysql://mysql:3306/product_service?createDatabaseIfNotExist=true&allowPublicKeyRetrieval=true&useSSL=false
+      SPRING_DATASOURCE_URL: jdbc:mysql://mysql:3306/product_service?allowPublicKeyRetrieval=true&useSSL=false
       SPRING_DATASOURCE_USERNAME: dev
       SPRING_DATASOURCE_PASSWORD: Password@123
     ports:
       - "8082:8082"
+    healthcheck:
+      test: ["CMD", "curl", "-fsS", "http://localhost:8082/products"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 40s
+
+  frontend-service:
+    build:
+      context: ./frontend-service
+      args:
+        VITE_PRODUCT_SERVICE_URL: http://localhost:8082
+    container_name: frontend-service
+    depends_on:
+      product-service:
+        condition: service_healthy
+    ports:
+      - "3000:80"
 
   notification-service:
     build:
