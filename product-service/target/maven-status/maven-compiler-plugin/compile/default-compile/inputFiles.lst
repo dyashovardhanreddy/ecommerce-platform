@@ -1,0 +1,10 @@
+C:\Users\yasho\OneDrive\Desktop\arena\Git Local Repo\ecommerce-platform\product-service\src\main\java\com\projects\product_service\controller\ProductController.java
+C:\Users\yasho\OneDrive\Desktop\arena\Git Local Repo\ecommerce-platform\product-service\src\main\java\com\projects\product_service\dto\CreateProductRequest.java
+C:\Users\yasho\OneDrive\Desktop\arena\Git Local Repo\ecommerce-platform\product-service\src\main\java\com\projects\product_service\dto\ProductResponse.java
+C:\Users\yasho\OneDrive\Desktop\arena\Git Local Repo\ecommerce-platform\product-service\src\main\java\com\projects\product_service\exception\GlobalExceptionHandler.java
+C:\Users\yasho\OneDrive\Desktop\arena\Git Local Repo\ecommerce-platform\product-service\src\main\java\com\projects\product_service\exception\ProductNotFoundException.java
+C:\Users\yasho\OneDrive\Desktop\arena\Git Local Repo\ecommerce-platform\product-service\src\main\java\com\projects\product_service\model\Product.java
+C:\Users\yasho\OneDrive\Desktop\arena\Git Local Repo\ecommerce-platform\product-service\src\main\java\com\projects\product_service\ProductServiceApplication.java
+C:\Users\yasho\OneDrive\Desktop\arena\Git Local Repo\ecommerce-platform\product-service\src\main\java\com\projects\product_service\repository\ProductRepository.java
+C:\Users\yasho\OneDrive\Desktop\arena\Git Local Repo\ecommerce-platform\product-service\src\main\java\com\projects\product_service\service\impl\ProductServiceImpl.java
+C:\Users\yasho\OneDrive\Desktop\arena\Git Local Repo\ecommerce-platform\product-service\src\main\java\com\projects\product_service\service\ProductService.java

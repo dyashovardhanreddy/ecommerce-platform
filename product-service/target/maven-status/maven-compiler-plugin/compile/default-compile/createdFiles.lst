@@ -1,0 +1,11 @@
+com\projects\product_service\model\Product$ProductBuilder.class
+com\projects\product_service\exception\GlobalExceptionHandler.class
+com\projects\product_service\repository\ProductRepository.class
+com\projects\product_service\service\impl\ProductServiceImpl.class
+com\projects\product_service\ProductServiceApplication.class
+com\projects\product_service\service\ProductService.class
+com\projects\product_service\dto\ProductResponse.class
+com\projects\product_service\exception\ProductNotFoundException.class
+com\projects\product_service\model\Product.class
+com\projects\product_service\dto\CreateProductRequest.class
+com\projects\product_service\controller\ProductController.class
